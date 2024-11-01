@@ -1,31 +1,27 @@
 module APB_Interface (
-    input Pwrite,             // Write signal for APB
-    input Penable,            // Enable signal for APB
-    input [2:0] Pselx,        // Select signal for APB slave
-    input [31:0] Pwdata,      // Write data from AHB to APB
-    input [31:0] Paddr,       // Address from AHB to APB
-    output Pwriteout,         // APB write output
-    output Penableout,        // APB enable output
-    output [2:0] Pselxout,    // APB select output
-    output [31:0] Pwdataout,  // APB write data output
-    output [31:0] Paddrout,   // APB address output
-    output reg [31:0] Prdata  // Read data from APB slave
+    input Pwrite,             
+    input Penable,            
+    input [2:0] Pselx,        
+    input [31:0] Pwdata,      
+    input [31:0] Paddr,       
+    output Pwriteout,         
+    output Penableout,        
+    output [2:0] Pselxout,    
+    output [31:0] Pwdataout,  
+    output [31:0] Paddrout,   
+    output reg [31:0] Prdata  
 );
 
-    // Assign the input signals directly to the corresponding output signals
     assign Penableout = Penable;
     assign Pselxout = Pselx;
     assign Pwriteout = Pwrite;
     assign Paddrout = Paddr;
     assign Pwdataout = Pwdata;
 
-    // Read data logic
     always @(*) begin
         if (~Pwrite && Penable) begin
-            // Generate random read data when Penable is high and Pwrite is low (read operation)
             Prdata = ($random) % 256;
         end else begin
-            // Default value for Prdata when not in read mode
             Prdata = 32'b0;
         end
     end

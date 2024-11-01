@@ -1,0 +1,114 @@
+module AHB_Master_tb;
+
+
+reg Hclk, Hresetn, Hreadyout;
+reg [1:0] Hresp;
+reg [31:0] Hrdata;
+wire Hwrite, Hreadyin;
+wire [1:0] Htrans;
+wire [31:0] Hwdata, Haddr;
+
+
+AHB_Master uut (
+    .Hclk(Hclk),
+    .Hresetn(Hresetn),
+    .Hreadyout(Hreadyout),
+    .Hresp(Hresp),
+    .Hrdata(Hrdata),
+    .Hwrite(Hwrite),
+    .Hreadyin(Hreadyin),
+    .Htrans(Htrans),
+    .Hwdata(Hwdata),
+    .Haddr(Haddr)
+);
+
+
+always #5 Hclk = ~Hclk;  
+
+initial begin
+    
+    Hclk = 0;
+    Hresetn = 0;
+    Hreadyout = 1;  
+    Hresp = 2'b00;  
+    Hrdata = 32'h476F7069;  
+
+    
+    #10;
+    Hresetn = 1;  
+
+   
+    #20;
+    uut.single_write(32'h0000_0000, 32'h1234_5678); 
+    #20;
+    uut.single_write(32'hFFFF_FFFF, 32'h8765_4321); 
+    #20;
+    uut.single_write(32'h8000_0001, 32'hABCDEFAB);  
+    
+    #60;
+
+   
+    Hrdata = 32'hFACE_FEED;  
+    uut.single_read(32'h0000_0000); 
+    #20;
+
+   
+    Hrdata = 32'hC0FF_EE00;  
+    uut.single_read(32'hFFFF_FFFF); 
+    #20;
+
+    
+    Hrdata = 32'hBAD_C0FFEE;  
+    uut.single_read(32'h8000_00A2); 
+
+    
+    #60;
+
+    
+    #20;
+    Hresp = 2'b00; 
+    uut.single_read(32'h8000_00A2);
+    
+    #20;
+    Hresp = 2'b01;  
+    uut.single_read(32'h8000_00A2);
+
+    #20;
+    Hresp = 2'b10;  
+    uut.single_read(32'h8000_00A2);
+
+    #20;
+    Hresp = 2'b11;  
+    uut.single_read(32'h8000_00A2);
+
+    
+    #20;
+    Hreadyout = 0; 
+    uut.single_write(32'h8000_00A2, 32'hFACE_FEED);  
+    #10;
+    Hreadyout = 1;  
+
+    
+    #20;
+    uut.Htrans = 2'b00;  
+    uut.single_read(32'h8000_00B2);
+    
+    #20;
+    uut.Htrans = 2'b01; 
+    uut.single_read(32'h8000_00B3);
+    
+    #20;
+    uut.Htrans = 2'b10;  
+    uut.single_read(32'h8000_00B4);
+    
+    #20;
+    uut.Htrans = 2'b11;  
+    uut.single_read(32'h8000_00B5);
+
+    
+    #100;
+    $stop;
+end
+
+endmodule
+

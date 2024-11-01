@@ -1,0 +1,108 @@
+module AHB_Master(
+  input Hclk, Hresetn, Hreadyout,       
+  input [1:0] Hresp,                    
+  input [31:0] Hrdata,                  
+  output reg Hwrite, Hreadyin,           
+  output reg [1:0] Htrans,               
+  output reg [31:0] Hwdata, Haddr       
+);
+
+reg [31:0] read_data;
+
+
+initial begin
+  Hwrite = 0;
+  Htrans = 2'b00; 
+  Hreadyin = 0;
+  Haddr = 0;
+  Hwdata = 0;
+  read_data = 0;
+end
+
+
+task single_write(input [31:0] addr, input [31:0] data);
+  begin
+    @(posedge Hclk)
+    #2;
+    begin
+      Hwrite = 1;          // Set for write operation
+      Htrans = 2'b10;      // Non-sequential transfer
+      Hreadyin = 1;        // Indicate that the master is ready
+      Haddr = addr;        // Address to write to
+      Hwdata = data;       // Data to be written
+    end
+
+    // Wait for Hreadyout to be high before completing the transaction
+    @(posedge Hclk);
+    while (!Hreadyout) begin
+      @(posedge Hclk);  // Stall until Hreadyout is asserted
+    end
+
+    #2;
+    begin
+      Htrans = 2'b00;      // IDLE after the transaction
+      Hwrite = 0;          // Reset the write signal after the operation
+    end
+  end
+endtask
+
+// Task for single read operation with Hreadyout and Hresp handling
+task single_read(input [31:0] addr);
+  begin
+    @(posedge Hclk)
+    #2;
+    begin
+      Hwrite = 0;          
+      Htrans = 2'b10;   
+      Hreadyin = 1;        
+      Haddr = addr;     
+    end
+
+    // Wait for Hreadyout to be high before completing the transaction
+    @(posedge Hclk);
+    while (!Hreadyout) begin
+      @(posedge Hclk);  // Stall until Hreadyout is asserted
+    end
+
+    #2;
+    begin
+      // Check HRESP (response) to ensure valid data transfer
+      if (Hresp == 2'b00) begin
+        // OKAY response - Capture the read data
+        read_data = Hrdata;  // Store the data from the slave
+        $display("Read Data from Slave: %h", read_data);  // Display the read data for debugging
+      end
+      else if (Hresp == 2'b01) begin
+        // ERROR response - handle the error
+        $display("Error in AHB read transaction!");
+      end
+      else if (Hresp == 2'b10) begin
+        // RETRY response - handle retry request
+        $display("AHB slave requested retry.");
+      end
+      else if (Hresp == 2'b11) begin
+        // SPLIT response - handle split
+        $display("AHB slave requested split.");
+      end
+
+      Htrans = 2'b00;       // IDLE after the transaction
+    end
+  end
+endtask
+
+// Main process (reset handling)
+always @(posedge Hclk or negedge Hresetn) begin
+  if (~Hresetn) begin
+    // Reset all signals when reset is active (Hresetn = 0)
+    Hwrite <= 0;
+    Htrans <= 2'b00;  // IDLE state
+    Hreadyin <= 0;
+    Haddr <= 0;
+    Hwdata <= 0;
+    read_data <= 0;
+  end
+end
+
+endmodule
+
+

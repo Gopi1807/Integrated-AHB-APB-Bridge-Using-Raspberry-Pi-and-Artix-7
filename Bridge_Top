@@ -1,0 +1,99 @@
+module Bridge_Top(
+  input Hclk,           
+  input Hresetn,        // Active-low rese
+  input Hreadyin,       // Ready input signal from the AHB slave
+  input [31:0] Hrdata,  // Read data from the AHB slave
+  input [1:0] Hresp,    // AHB response signal (OKAY, ERROR, RETRY, SPLIT)
+  output Hreadyout,     // Ready output signal to the AHB slave
+  output [31:0] Haddr,  // Address from AHB master
+  output [31:0] Hwdata, // Write data from AHB master
+  output Hwrite,        // Write signal from AHB master
+  output [1:0] Htrans,  // Transfer type: IDLE, BUSY, NON-SEQUENTIAL, SEQUENTIAL
+  output Penable,       // Enable signal for APB
+  output Pwrite,        // Write signal for APB
+  output [2:0] Pselx,   // Slave select signal for APB
+  output [31:0] Paddr,  // Address for APB
+  output [31:0] Pwdata, // Write data for APB
+  input [31:0] Prdata   // Read data from the APB slave
+);
+
+  ///////////////////////////////////////////////////////////////
+  // Intermediate signals
+  wire valid;
+  wire [31:0] Haddr1, Haddr2, Hwdata1, Hwdata2;
+  wire Hwritereg;
+  wire [2:0] tempselx;
+
+  ///////////////////////////////////////////////////////////////
+  // Module Instantiations
+
+  // AHB Master
+  AHB_Master AHBMaster (
+    .Hclk(Hclk),
+    .Hresetn(Hresetn),
+    .Hreadyout(Hreadyout),     // This signal is driven by the master and output to the top module
+    .Hwrite(Hwrite),
+    .Htrans(Htrans),
+    .Haddr(Haddr),
+    .Hwdata(Hwdata),
+    .Hreadyin(Hreadyin),
+    .Hrdata(Hrdata),
+    .Hresp(Hresp)
+  );
+
+  // AHB Slave Interface
+  AHB_slave_interface AHBSlave (
+    .Hclk(Hclk),
+    .Hresetn(Hresetn),
+    .Hwrite(Hwrite),
+    .Hreadyin(Hreadyin),
+    .Htrans(Htrans),
+    .Haddr(Haddr),
+    .Hwdata(Hwdata),
+    .Prdata(Prdata),
+    .valid(valid),
+    .Haddr1(Haddr1),
+    .Haddr2(Haddr2),
+    .Hwdata1(Hwdata1),
+    .Hwdata2(Hwdata2),
+    .Hrdata(Hrdata),
+    .Hwritereg(Hwritereg),
+    .tempselx(tempselx),
+    .Hresp(Hresp)
+  );
+
+  // APB FSM Controller
+  APB_FSM_Controller APBControl (
+    .Hclk(Hclk),
+    .Hresetn(Hresetn),
+    .valid(valid),
+    .Haddr1(Haddr1),
+    .Haddr2(Haddr2),
+    .Hwdata1(Hwdata1),
+    .Hwdata2(Hwdata2),
+    .Prdata(Prdata),
+    .Hwrite(Hwrite),
+    .Haddr(Haddr),
+    .Hwdata(Hwdata),
+    .Hwritereg(Hwritereg),
+    .tempselx(tempselx),
+    .Pwrite(Pwrite),
+    .Penable(Penable),
+    .Pselx(Pselx),
+    .Paddr(Paddr),
+    .Pwdata(Pwdata),
+    .Hreadyout(Hreadyout)    
+  );
+
+  // APB Interface
+  APB_Interface APBIntf (
+    .Pwrite(Pwrite),
+    .Penable(Penable),
+    .Pselx(Pselx),
+    .Pwdata(Pwdata),
+    .Paddr(Paddr),
+    .Prdata(Prdata)
+  );
+
+endmodule
+

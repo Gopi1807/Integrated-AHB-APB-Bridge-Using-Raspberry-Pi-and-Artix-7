@@ -1,0 +1,158 @@
+module APB_FSM_Controller_tb;
+
+  // Inputs
+  reg Hclk;
+  reg Hresetn;
+  reg valid;
+  reg Hwrite;
+  reg Hwritereg;
+  reg [31:0] Haddr1;
+  reg [31:0] Haddr2;
+  reg [31:0] Hwdata1;
+  reg [31:0] Hwdata2;
+  reg [31:0] Prdata;
+  reg [31:0] Haddr;
+  reg [31:0] Hwdata;
+  reg [2:0] tempselx;
+
+  // Outputs
+  wire Pwrite;
+  wire Penable;
+  wire [2:0] Pselx;
+  wire [31:0] Paddr;
+  wire [31:0] Pwdata;
+  wire Hreadyout;
+
+  // Instantiate the Unit Under Test (UUT)
+  APB_FSM_Controller uut (
+    .Hclk(Hclk),
+    .Hresetn(Hresetn),
+    .valid(valid),
+    .Hwrite(Hwrite),
+    .Hwritereg(Hwritereg),
+    .Haddr1(Haddr1),
+    .Haddr2(Haddr2),
+    .Hwdata1(Hwdata1),
+    .Hwdata2(Hwdata2),
+    .Prdata(Prdata),
+    .Haddr(Haddr),
+    .Hwdata(Hwdata),
+    .tempselx(tempselx),
+    .Pwrite(Pwrite),
+    .Penable(Penable),
+    .Pselx(Pselx),
+    .Paddr(Paddr),
+    .Pwdata(Pwdata),
+    .Hreadyout(Hreadyout)
+  );
+
+  // Clock generation
+  always #5 Hclk = ~Hclk;
+
+  // Testbench procedure
+  initial begin
+    // Initialize inputs
+    Hclk = 0;
+    Hresetn = 0;
+    valid = 0;
+    Hwrite = 0;
+    Hwritereg = 0;
+    Haddr1 = 0;
+    Haddr2 = 0;
+    Hwdata1 = 0;
+    Hwdata2 = 0;
+    Prdata = 0;
+    Haddr = 0;
+    Hwdata = 0;
+    tempselx = 0;
+
+    // Apply reset
+    #10;
+    Hresetn = 1;  // Release reset
+
+    // Test each state of the FSM
+
+    // Test IDLE state
+    $display("Testing IDLE state");
+    valid = 0;
+    #20;
+    
+    // Test WRITE operation: Transition to WWAIT and WRITE states
+    $display("Testing WRITE operation");
+    valid = 1;
+    Hwrite = 1;
+    Hwritereg = 1;
+    Haddr1 = 32'h8000_0001;
+    Haddr2 = 32'h8000_0002;
+    Hwdata1 = 32'hDEADBEEF;
+    Hwdata2 = 32'hCAFEBABE;
+    tempselx = 3'b001;
+    #20;
+
+    // Monitor state transition to WWAIT
+    $display("Transitioning to WWAIT");
+    #20;
+
+    // Monitor state transition to WRITE
+    $display("Transitioning to WRITE");
+    #20;
+
+    // Test READ operation: Transition to READ and RENABLE states
+    $display("Testing READ operation");
+    valid = 1;
+    Hwrite = 0; // Read operation
+    Haddr = 32'h9000_0001;
+    Prdata = 32'hABCDEF01;
+    #20;
+
+    // Monitor state transition to READ
+    $display("Transitioning to READ");
+    #20;
+
+    // Monitor state transition to RENABLE
+    $display("Transitioning to RENABLE");
+    #20;
+
+    // Test pipelined WRITE: Transition to WWRITEP and WENABLEP states
+    $display("Testing pipelined WRITE operation");
+    valid = 1;
+    Hwrite = 1;
+    Hwritereg = 1;
+    Haddr1 = 32'h8000_0003;
+    Haddr2 = 32'h8000_0004;
+    Hwdata1 = 32'h12345678;
+    Hwdata2 = 32'h87654321;
+    tempselx = 3'b010;
+    #20;
+
+    // Monitor state transition to WWRITEP
+    $display("Transitioning to WRITEP");
+    #20;
+
+    // Monitor state transition to WENABLEP
+    $display("Transitioning to WENABLEP");
+    #20;
+
+    // Apply invalid input (No valid signal) to check transition back to IDLE
+    $display("Testing invalid transaction");
+    valid = 0;
+    #20;
+
+    // Apply valid read with no write to check transitions
+    valid = 1;
+    Hwrite = 0;
+    Haddr = 32'hA000_0001;
+    Prdata = 32'hBAADF00D;
+    #20;
+
+    // Monitor state transition to READ and RENABLE
+    $display("Testing read transition after invalid");
+    #20;
+
+    // Simulation complete
+    $display("Simulation complete");
+    #50;
+    $stop;
+  end
+endmodule
+

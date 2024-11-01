@@ -1,6 +1,5 @@
 module Bridge_Top_tb;
 
-  // Inputs
   reg Hclk;
   reg Hresetn;
   reg Hreadyin;
@@ -10,7 +9,6 @@ module Bridge_Top_tb;
   reg [31:0] Prdata;
   reg [1:0] Htrans;
 
-  // Outputs
   wire Hreadyout;
   wire [31:0] Hrdata;
   wire [31:0] Paddr;
@@ -20,12 +18,10 @@ module Bridge_Top_tb;
   wire [2:0] Pselx;
   wire valid;
   
-  // Internal signals for debugging
   wire [31:0] Haddr1, Haddr2;
   wire [31:0] Hwdata1, Hwdata2;
   wire Hwritereg;
   
-  // Instantiate the Unit Under Test (UUT)
   Bridge_Top uut (
     .Hclk(Hclk),
     .Hresetn(Hresetn),
@@ -44,10 +40,8 @@ module Bridge_Top_tb;
     .Hrdata(Hrdata)
   );
 
-  // Clock generation
   always #5 Hclk = ~Hclk;
 
-  // Testbench procedure
   initial begin
     // Initialize inputs
     Hclk = 0;
@@ -56,41 +50,36 @@ module Bridge_Top_tb;
     Hwrite = 0;
     Haddr = 0;
     Hwdata = 0;
-    Prdata = 32'hABCDEF01;  // Initialized to a valid value
-    Htrans = 2'b00;  // IDLE state
+    Prdata = 32'hABCDEF01; 
+    Htrans = 2'b00;  
 
-    // Apply reset
+    
     #10;
-    Hresetn = 1;  // Release reset
+    Hresetn = 1; 
 
-    // Test 1: Write operation
     #20;
-    Hwrite = 1;          // Set for write operation
-    Haddr = 32'h8000_0001;  // Write address
-    Hwdata = 32'h12345678;  // Write data
-    Htrans = 2'b10;      // Non-sequential transfer
-    Hreadyin = 1;        // Master ready
+    Hwrite = 1;         
+    Haddr = 32'h8000_0001;  
+    Hwdata = 32'h12345678;  
+    Htrans = 2'b10;      
+    Hreadyin = 1;        
     #20;
     
-    // Test 2: Read operation with Prdata
     $display("Starting Read operation...");
-    Hwrite = 0;          // Set for read operation
-    Haddr = 32'h9000_0001;  // Read address
-    Htrans = 2'b10;      // Non-sequential transfer
-    Hreadyin = 1;        // Master ready
-    Prdata = 32'hDEADBEEF;  // Data to be read from APB
+    Hwrite = 0;         
+    Haddr = 32'h9000_0001; 
+    Htrans = 2'b10;     
+    Hreadyin = 1;       
+    Prdata = 32'hDEADBEEF;  
     #20;
 
-    // Test 3: Idle and Busy states
-    Htrans = 2'b00;      // IDLE state
+    Htrans = 2'b00;     
     #20;
-    Htrans = 2'b01;      // BUSY state
+    Htrans = 2'b01;     
     #20;
 
-    // Debugging: Check values of Hrdata and Prdata during the read operation
     $display("Hrdata: %h, Prdata: %h at time %t", Hrdata, Prdata, $time);
 
-    // Test 4: Additional Write and Read operations
     Hwrite = 1;
     Haddr = 32'h8000_0002;
     Hwdata = 32'h87654321;
@@ -102,7 +91,6 @@ module Bridge_Top_tb;
     Prdata = 32'hBAADF00D;
     #20;
 
-    // End simulation
     $stop;
   end
 

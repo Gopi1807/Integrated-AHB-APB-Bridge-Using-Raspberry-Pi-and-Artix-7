@@ -1,37 +1,32 @@
 module Bridge_Top(
   input Hclk,           
-  input Hresetn,        // Active-low rese
-  input Hreadyin,       // Ready input signal from the AHB slave
-  input [31:0] Hrdata,  // Read data from the AHB slave
-  input [1:0] Hresp,    // AHB response signal (OKAY, ERROR, RETRY, SPLIT)
-  output Hreadyout,     // Ready output signal to the AHB slave
-  output [31:0] Haddr,  // Address from AHB master
-  output [31:0] Hwdata, // Write data from AHB master
-  output Hwrite,        // Write signal from AHB master
-  output [1:0] Htrans,  // Transfer type: IDLE, BUSY, NON-SEQUENTIAL, SEQUENTIAL
-  output Penable,       // Enable signal for APB
-  output Pwrite,        // Write signal for APB
-  output [2:0] Pselx,   // Slave select signal for APB
-  output [31:0] Paddr,  // Address for APB
-  output [31:0] Pwdata, // Write data for APB
-  input [31:0] Prdata   // Read data from the APB slave
+  input Hresetn,       
+  input Hreadyin,      
+  input [31:0] Hrdata, 
+  input [1:0] Hresp,   
+  output Hreadyout,    
+  output [31:0] Haddr,  
+  output [31:0] Hwdata, 
+  output Hwrite,        
+  output [1:0] Htrans,  
+  output Penable,       
+  output Pwrite,        
+  output [2:0] Pselx,   
+  output [31:0] Paddr,  
+  output [31:0] Pwdata, 
+  input [31:0] Prdata   
 );
 
-  ///////////////////////////////////////////////////////////////
-  // Intermediate signals
   wire valid;
   wire [31:0] Haddr1, Haddr2, Hwdata1, Hwdata2;
   wire Hwritereg;
   wire [2:0] tempselx;
 
-  ///////////////////////////////////////////////////////////////
-  // Module Instantiations
 
-  // AHB Master
   AHB_Master AHBMaster (
     .Hclk(Hclk),
     .Hresetn(Hresetn),
-    .Hreadyout(Hreadyout),     // This signal is driven by the master and output to the top module
+    .Hreadyout(Hreadyout),     
     .Hwrite(Hwrite),
     .Htrans(Htrans),
     .Haddr(Haddr),
@@ -41,7 +36,6 @@ module Bridge_Top(
     .Hresp(Hresp)
   );
 
-  // AHB Slave Interface
   AHB_slave_interface AHBSlave (
     .Hclk(Hclk),
     .Hresetn(Hresetn),
@@ -62,7 +56,6 @@ module Bridge_Top(
     .Hresp(Hresp)
   );
 
-  // APB FSM Controller
   APB_FSM_Controller APBControl (
     .Hclk(Hclk),
     .Hresetn(Hresetn),
@@ -85,7 +78,6 @@ module Bridge_Top(
     .Hreadyout(Hreadyout)    
   );
 
-  // APB Interface
   APB_Interface APBIntf (
     .Pwrite(Pwrite),
     .Penable(Penable),

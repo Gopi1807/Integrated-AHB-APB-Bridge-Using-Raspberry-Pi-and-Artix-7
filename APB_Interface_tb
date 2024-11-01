@@ -53,11 +53,11 @@ module APB_Interface_tb;
              Pwriteout, Penableout, Pselxout, Paddrout, Prdata);
 
     #10;
-    Pwrite = 1;               // Set for write operation
-    Pselx = 3'b011;           // Select slave 3
-    Paddr = 32'h9000_0004;    // Set new address
-    Pwdata = 32'h8765_4321;   // Write different data
-    Penable = 1;              // Enable the transaction
+    Pwrite = 1;               
+    Pselx = 3'b011;           
+    Paddr = 32'h9000_0004;    
+    Pwdata = 32'h8765_4321;   
+    Penable = 1;              
     #10;
 
     $display("Second write operation:");
@@ -65,10 +65,10 @@ module APB_Interface_tb;
              Pwriteout, Penableout, Pselxout, Paddrout, Pwdataout);
 
     #10;
-    Pwrite = 0;               // Set for read operation
-    Pselx = 3'b100;           // Select a different slave
-    Paddr = 32'hFFFF_FFFF;    // Invalid address (out of range)
-    Penable = 1;              // Enable the transaction
+    Pwrite = 0;              
+    Pselx = 3'b100;          
+    Paddr = 32'hFFFF_FFFF;    
+    Penable = 1;              
     #10;
 
     $display("Invalid read operation:");

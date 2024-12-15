@@ -99,3 +99,8 @@ Key Benefits
 ---
 
 This project demonstrates an efficient implementation of an AHB to APB Bridge on an FPGA, integrating protocol conversion, serialized communication, and modular design for seamless interaction between high-performance and low-power components. Let me know if you need any additional details or explanations!
+
+
+The Output waveform for the AHB to APB Bridge is:
+
+

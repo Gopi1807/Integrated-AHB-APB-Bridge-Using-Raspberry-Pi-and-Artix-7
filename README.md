@@ -32,7 +32,6 @@ Key Features and Design Highlights
    - The 104-bit output is serialized within the FPGA and sent back to the Raspberry Pi, bit by bit, through the SPI interface.
    - The Raspberry Pi receives and decodes the output data for verification and analysis.
 
----
 
 Modules in the Design
 
@@ -54,7 +53,6 @@ Modules in the Design
    - Combines APB output signals and transaction metadata into a 104-bit register.
    - Sends the serialized output back to the SPI slave module.
 
----
 
 System Workflow
 
@@ -74,7 +72,7 @@ System Workflow
 5. Validation:
    - The Raspberry Pi decodes the output and validates the processed data to ensure the bridge functionality is accurate.
 
----
+
 
 Applications of the AHB to APB Bridge
 
@@ -87,7 +85,6 @@ Applications of the AHB to APB Bridge
 3. FPGA-Based Prototyping:
    - Serves as a prototype to test AHB and APB interfaces for SoC designs in FPGA environments.
 
----
 
 Key Benefits
 
@@ -96,7 +93,6 @@ Key Benefits
 - Scalability: Facilitates integration of additional peripherals without redesigning the entire system.
 - High Reliability: Maintains data integrity and synchronization across clock domains.
 
----
 
 This project demonstrates an efficient implementation of an AHB to APB Bridge on an FPGA, integrating protocol conversion, serialized communication, and modular design for seamless interaction between high-performance and low-power components. Let me know if you need any additional details or explanations!
 

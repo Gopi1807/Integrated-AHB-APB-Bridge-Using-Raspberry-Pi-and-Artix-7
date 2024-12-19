@@ -1,0 +1,72 @@
+`timescale 1ns/1ps
+//////////////////////////////////////////////////////////////////////////////////
+ 
+// Engineer: Gopi Chand Ananthu
+// 
+// Create Date: 13.12.2024 15:30:30
+// Design Name: Intergrated AHB to APB Bridge
+// Module Name: spi_slave
+// Project Name: Intergrated AHB to APB Bridge using Raspberry Pi and Artix-7 FPGA
+//////////////////////////////////////////////////////////////////////////////////
+
+
+
+module spi_slave(
+    input wire clk,
+    input wire reset_n,
+    input wire mosi,             //FPGA // Data from Master
+    input wire sclk,             //FPGA // SPI Clock from Master
+    input wire cs_n,             //FPGA // Chip Select (Active Low, driven by Master)
+   
+    input wire data_from_mapper,  // 1-bit data input from Mapper
+    
+    output reg miso,       //FPGA       // Data sent to Master
+    output reg data_from_slave,    // 1-bit data output to Mapper
+    output reg start_transaction  // Internally generated transaction trigger
+);
+
+    reg [7:0] bit_count_input;          // Counter to track the number of bits
+    reg [7:0] bit_count_output;
+      
+    always @(posedge clk or negedge reset_n) begin
+        if (!reset_n & cs_n == 1) begin
+            bit_count_input <= 0;
+            bit_count_output <= 0;
+            start_transaction <= 0;
+            miso <= 0;
+            data_from_slave <= 0;
+        end else if (reset_n == 1 & cs_n == 0) begin
+            // Start transaction when cs_n goes low
+            if (bit_count_input == 0 && !start_transaction) begin
+                start_transaction <= 1;
+            end
+
+            // Handle SPI communication
+            if (sclk != 0) begin
+                // Receive data from MOSI and send to Mapper
+                data_from_slave <= mosi;
+                bit_count_input <= bit_count_input + 1;
+
+                // Send data from Mapper to Master via MISO
+                miso <= data_from_mapper;
+                bit_count_output <= bit_count_output +1;
+
+                // Increment bit counter
+                
+                // End transaction after 104 bits
+                if (bit_count_input == 100) begin
+                    start_transaction <= 0; // Clear start_transaction
+                    bit_count_input <= 0;         // Reset bit counter
+                    bit_count_output <= 0;
+                end
+            end
+            else if(sclk == 0) begin
+                bit_count_input <= bit_count_input;
+            end
+        end else begin
+            // Ensure start_transaction is low when cs_n is high
+            start_transaction <= 0;
+        end
+    end
+endmodule
+
